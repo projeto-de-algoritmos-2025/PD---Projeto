@@ -1,4 +1,5 @@
 import random
+from typing import Optional, Dict
 
 class SistemaPedagio:
 
@@ -54,3 +55,43 @@ class SistemaPedagio:
             quantidade = random.randint(min_qtd, max_qtd)
             if quantidade > 0:
                 self.caixa[cedula] = quantidade
+
+        print("Caixa atual:")
+        self.mostrar_caixa()
+
+    def mostrar_caixa(self) -> None:
+        total = 0
+        for denominacao in sorted(self.caixa.keys(), reverse=True):
+            quantidade = self.caixa[denominacao]
+            subtotal = denominacao * quantidade
+            total += subtotal
+            print(f"  R$ {denominacao:.2f} x {quantidade} = R$ {subtotal:.2f}")
+        print(f"  Total no caixa: R$ {total:.2f}")
+        print()
+
+
+    def coin_change(self, valor_troco: float) -> Optional[Dict[float, int]]:
+
+        if valor_troco == 0:
+            return {}
+
+        denominacoes_ordenadas = sorted(self.caixa.keys(), reverse=True)
+
+        resultado = {}
+        valor_restante = valor_troco
+
+        for denominacao in denominacoes_ordenadas:
+            if valor_restante >= denominacao and self.caixa[denominacao] > 0:
+                quantidade_necessaria = int(valor_restante / denominacao)
+                quantidade_disponivel = self.caixa[denominacao]
+                quantidade_usada = min(quantidade_necessaria, quantidade_disponivel)
+
+                if quantidade_usada > 0:
+                    resultado[denominacao] = quantidade_usada
+                    valor_restante -= denominacao * quantidade_usada
+                    valor_restante = round(valor_restante, 2)
+
+        if abs(valor_restante) < 0.01:
+            return resultado
+        else:
+            return None

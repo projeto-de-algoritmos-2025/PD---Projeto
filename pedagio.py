@@ -95,3 +95,67 @@ class SistemaPedagio:
             return resultado
         else:
             return None
+        
+    def processar_pagamento(self, tipo_veiculo: str, valor_pago: float) -> bool:
+        if tipo_veiculo not in self.tarifas:
+            print(f" Tipo de veículo inválido: {tipo_veiculo}")
+            return False
+
+        tarifa = self.tarifas[tipo_veiculo]
+
+        print(f" Veículo: {tipo_veiculo.capitalize()}")
+        print(f" Tarifa: R$ {tarifa:.2f}")
+        print(f"Valor pago: R$ {valor_pago:.2f}")
+
+        if valor_pago < tarifa:
+            print(f"Valor insuficiente! Faltam R$ {tarifa - valor_pago:.2f}")
+            return False
+
+        if valor_pago == tarifa:
+            print("Pagamento exato! Sem troco.")
+            return True
+
+        valor_troco = round(valor_pago - tarifa, 2)
+
+        print(f" Troco necessário: R$ {valor_troco:.2f}")
+
+        troco = self.coin_change(valor_troco)
+
+        if troco is None:
+            print(" Não é possível dar o troco! Caixa insuficiente.")
+            return False
+
+        print(" Troco calculado:")
+        total_moedas = 0
+        for denominacao in sorted(troco.keys(), reverse=True):
+            quantidade = troco[denominacao]
+            total_moedas += quantidade
+            print(f"  R$ {denominacao:.2f} x {quantidade}")
+
+        print(f" Total de moedas/notas no troco: {total_moedas}")
+
+        for denominacao, quantidade in troco.items():
+            self.caixa[denominacao] -= quantidade
+
+        return True
+
+    def mostrar_tarifas(self) -> None:
+        print(" Tarifas do Pedágio:")
+        for veiculo, tarifa in self.tarifas.items():
+            print(f"  {veiculo.capitalize()}: R$ {tarifa:.2f}")
+        print()
+
+
+def main():
+    sistema = SistemaPedagio()
+
+    print("=" * 50)
+    print("  SISTEMA DE PEDÁGIO - COIN CHANGE")
+    print("=" * 50)
+    print()
+
+    sistema.mostrar_tarifas()
+
+
+if __name__ == "__main__":
+    main()

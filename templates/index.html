@@ -3,12 +3,45 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistema de Pedágio</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
-  <h1>Bem-vindo ao Sistema de Pedágio!</h1>
-  <p>A interface de pagamento será construída aqui.</p>
+  <div class="container">
+    <h1>Sistema de Pedágio</h1>
+
+    <div class="card" id="payment-card">
+      <h2>Pagamento</h2>
+      <div class="form-group">
+        <label for="vehicle-type">Tipo de Veículo:</label>
+        <select id="vehicle-type">
+          <option value="">Selecione um veículo</option>
+        </select>
+        <span id="vehicle-rate"></span>
+      </div>
+      <div class="form-group">
+        <label for="amount-paid">Valor Pago (R$):</label>
+        <input type="number" id="amount-paid" placeholder="Ex: 20.50" step="0.01">
+      </div>
+      <button id="pay-button">Processar Pagamento</button>
+    </div>
+
+    <div class="card" id="result-card">
+      <h2>Resultado</h2>
+      <div id="result-message">
+        <p>Aguardando pagamento...</p>
+      </div>
+    </div>
+
+    <div class="card" id="cash-box-card">
+      <h2>Situação do Caixa</h2>
+      <pre id="cash-box-status">Carregando...</pre>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 
 </html>

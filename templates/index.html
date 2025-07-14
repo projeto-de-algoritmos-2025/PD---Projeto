@@ -1,68 +1,90 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Sistema de Pedágio</title>
+		<link
+			rel="stylesheet"
+			href="{{ url_for('static', filename='style.css') }}" />
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	</head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Pedágio</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
-
-<body>
-  <div class="container">
-    <h1>Sistema de Pedágio</h1>
-    <div class="card" id="payment-card">
-      <h2>Pagamento</h2>
-      <div class="tariff-display-wrapper">
-        <label>Tarifa a Pagar</label>
-        <div id="tariff-display">R$ 0.00</div>
-      </div>
-      <div class="form-group">
-        <label for="vehicle-type">1. Selecione o Tipo de Veículo:</label>
-        <select id="vehicle-type">
-          <option value="">-- Selecione --</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="amount-paid">2. Informe o Valor Pago (R$):</label>
-        <input type="number" id="amount-paid" placeholder="Ex: 20.50" step="0.01">
-      </div>
-      <button id="pay-button">Processar Pagamento</button>
-    </div>
-    <div class="card" id="result-card">
-      <h2>Resultado</h2>
-      <div id="result-message" class="info">
-        <p>Aguardando operação...</p>
-      </div>
-    </div>
-    <div class="side-column">
-      <div class="card" id="cash-box-card">
-        <h2>Situação do Caixa</h2>
-        <pre id="cash-box-status">Abasteça o caixa para começar.</pre>
-      </div>
-      <div class="card" id="manage-cash-card">
-        <h2>Gerenciar Caixa</h2>
-        <div class="form-group">
-          <label for="cash-denomination">Cédula/Moeda:</label>
-          <select id="cash-denomination">
-            <option value="">Carregando...</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="cash-quantity">Quantidade:</label>
-          <input type="number" id="cash-quantity" min="1" placeholder="Ex: 10">
-        </div>
-        <div class="manage-buttons">
-          <button id="add-cash-button" class="btn-success">Abastecer</button>
-          <button id="remove-cash-button" class="btn-danger">Remover</button>
-        </div>
-        <hr>
-        <button id="clear-cash-button" class="btn-clear">Limpar Caixa</button>
-      </div>
-    </div>
-  </div>
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-
+	<body>
+		<div class="container">
+			<h1>Sistema de Pedágio</h1>
+			<div class="card" id="payment-card">
+				<h2>Pagamento</h2>
+				<div class="tariff-display-wrapper">
+					<label>Tarifa a Pagar</label>
+					<div id="tariff-display">R$ 0.00</div>
+				</div>
+				<div class="form-group">
+					<label for="vehicle-type">1. Selecione o Tipo de Veículo:</label>
+					<select id="vehicle-type">
+						<option value="">-- Selecione --</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="amount-paid">2. Informe o Valor Pago (R$):</label>
+					<input
+						type="number"
+						id="amount-paid"
+						placeholder="Ex: 20.50"
+						step="0.01" />
+				</div>
+				<button id="pay-button">Processar Pagamento</button>
+			</div>
+			<div class="card" id="result-card">
+				<h2>Resultado</h2>
+				<div id="result-message" class="info">
+					<p>Aguardando operação...</p>
+				</div>
+			</div>
+			<div class="side-column">
+				<div class="card" id="cash-box-card">
+					<h2>Situação do Caixa</h2>
+					<pre id="cash-box-status">Abasteça o caixa para começar.</pre>
+				</div>
+				<div class="card" id="manage-cash-card">
+					<h2>Gerenciar Caixa</h2>
+					<div class="form-group">
+						<label for="cash-denomination">Cédula/Moeda:</label>
+						<select id="cash-denomination">
+							<option value="">Carregando...</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="cash-quantity">Quantidade:</label>
+						<input
+							type="number"
+							id="cash-quantity"
+							min="1"
+							placeholder="Ex: 10" />
+					</div>
+					<div class="manage-buttons">
+						<button id="add-cash-button" class="btn-success">Abastecer</button>
+						<button id="remove-cash-button" class="btn-danger">Remover</button>
+					</div>
+					<hr />
+					<button id="clear-cash-button" class="btn-clear">Limpar Caixa</button>
+				</div>
+			</div>
+			<div class="card" id="history-card">
+				<h2>Histórico de Transações</h2>
+				<div class="history-controls">
+					<button id="refresh-history-button" class="btn-info">
+						Atualizar Histórico
+					</button>
+					<button id="clear-history-button" class="btn-danger">
+						Limpar Histórico
+					</button>
+				</div>
+				<div id="history-content">
+					<p>Nenhuma transação registrada ainda.</p>
+				</div>
+			</div>
+		</div>
+		<script src="{{ url_for('static', filename='script.js') }}"></script>
+	</body>
 </html>

@@ -12,6 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
 	const addCashButton = document.getElementById('add-cash-button');
 	const removeCashButton = document.getElementById('remove-cash-button');
 	const clearCashButton = document.getElementById('clear-cash-button');
+	const statisticsContent = document.getElementById('statistics-content');
+	const refreshStatsButton = document.getElementById('refresh-stats-button');
+	const historyContent = document.getElementById('history-content');
+	const refreshHistoryButton = document.getElementById(
+		'refresh-history-button'
+	);
+	const clearHistoryButton = document.getElementById('clear-history-button');
 
 	let currentRates = {};
 
@@ -90,6 +97,94 @@ document.addEventListener('DOMContentLoaded', () => {
 		} catch (error) {
 			console.error('Falha ao carregar caixa:', error);
 			cashBoxStatusPre.textContent = 'Erro ao carregar caixa.';
+		}
+	}
+
+
+	async function carregarHistorico() {
+		try {
+			const response = await fetch('/api/historico');
+			const historico = await response.json();
+
+			if (historico.length === 0) {
+				historyContent.innerHTML = '<p>Nenhuma transação registrada ainda.</p>';
+				return;
+			}
+
+			let html = '<div class="history-list">';
+
+			// Exibe as transações mais recentes primeiro
+			historico.reverse().forEach((transacao) => {
+				html += `
+					<div class="history-item">
+						<div class="history-header">
+							<span class="transaction-id">#${transacao.id}</span>
+							<span class="transaction-date">${transacao.data_hora}</span>
+						</div>
+						<div class="history-details">
+							<div><strong>Veículo:</strong> ${
+								transacao.tipo_veiculo.charAt(0).toUpperCase() +
+								transacao.tipo_veiculo.slice(1)
+							}</div>
+							<div><strong>Tarifa:</strong> R$ ${transacao.tarifa.toFixed(2)}</div>
+							<div><strong>Valor Pago:</strong> R$ ${transacao.valor_pago.toFixed(2)}</div>
+							<div><strong>Troco:</strong> R$ ${transacao.valor_troco.toFixed(2)}</div>
+				`;
+
+				if (transacao.valor_troco > 0) {
+					html += '<div><strong>Troco detalhado:</strong><ul>';
+					for (const [denominacao, quantidade] of Object.entries(
+						transacao.troco_detalhado
+					)) {
+						html += `<li>${quantidade}x de R$ ${parseFloat(denominacao).toFixed(
+							2
+						)}</li>`;
+					}
+					html += '</ul></div>';
+				}
+
+				html += '</div></div>';
+			});
+
+			html += '</div>';
+			historyContent.innerHTML = html;
+		} catch (error) {
+			console.error('Falha ao carregar histórico:', error);
+			historyContent.innerHTML = '<p>Erro ao carregar histórico.</p>';
+		}
+	}
+
+	async function limparHistorico() {
+		const confirm = await Swal.fire({
+			title: 'Tem certeza?',
+			text: 'Deseja realmente limpar todo o histórico de transações?',
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Sim, limpar!',
+			cancelButtonText: 'Cancelar',
+		});
+
+		if (!confirm.isConfirmed) return;
+
+		try {
+			const response = await fetch('/api/historico/limpar', { method: 'POST' });
+			const result = await response.json();
+			Swal.fire({
+				icon: result.sucesso ? 'success' : 'error',
+				title: result.sucesso ? 'Sucesso' : 'Erro',
+				text: result.mensagem,
+			});
+			if (result.sucesso) {
+				carregarHistorico();
+			}
+		} catch (error) {
+			Swal.fire({
+				icon: 'error',
+				title: 'Erro',
+				text: 'Erro de comunicação com o servidor.',
+			});
 		}
 	}
 
@@ -200,6 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			exibirResultado(resultado.sucesso, resultado.mensagem, resultado);
 			if (resultado.sucesso) {
 				atualizarCaixa();
+				carregarHistorico();
 				amountPaidInput.value = '';
 			}
 		} catch (error) {
@@ -219,12 +315,15 @@ document.addEventListener('DOMContentLoaded', () => {
 	addCashButton.addEventListener('click', () => gerenciarCaixa('abastecer'));
 	removeCashButton.addEventListener('click', () => gerenciarCaixa('remover'));
 	clearCashButton.addEventListener('click', limparCaixa);
+	refreshHistoryButton.addEventListener('click', carregarHistorico);
+	clearHistoryButton.addEventListener('click', limparHistorico);
 
 	// --- Carregamento Inicial ---
 	function inicializarPainel() {
 		carregarTarifas();
 		carregarDenominacoes();
 		atualizarCaixa();
+		carregarHistorico();
 	}
 	inicializarPainel();
 });

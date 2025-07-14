@@ -1,4 +1,5 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, jsonify, render_template, request
+
 from pedagio import SistemaPedagio
 
 app = Flask(__name__)
@@ -57,6 +58,17 @@ def api_limpar_caixa():
     sistema.limpar_caixa()
     return jsonify({'sucesso': True, 'mensagem': 'O caixa foi esvaziado com sucesso.'})
 
+@app.route('/api/historico/limpar', methods=['POST'])
+def api_limpar_historico():
+    """Endpoint para limpar o histórico de transações."""
+    sistema.limpar_historico()
+    return jsonify({'sucesso': True, 'mensagem': 'O histórico foi limpo com sucesso.'})
+
+@app.route('/api/historico', methods=['GET'])
+def get_historico():
+    """Retorna o histórico de transações."""
+    return jsonify(sistema.obter_historico())
+
 @app.route('/api/pagar', methods=['POST'])
 def api_processar_pagamento():
     dados = request.get_json()
@@ -65,7 +77,7 @@ def api_processar_pagamento():
         valor_pago = float(dados['valor_pago'])
     except (ValueError, KeyError, TypeError):
         return jsonify({'sucesso': False, 'mensagem': 'Dados de pagamento inválidos.'}), 400
-    
+
     # Validações
     if tipo_veiculo not in sistema.tarifas:
         return jsonify({'sucesso': False, 'mensagem': 'Tipo de veículo inválido.'}), 400
@@ -83,6 +95,9 @@ def api_processar_pagamento():
     sistema.adicionar_pagamento_ao_caixa(valor_pago)
     for denominacao, quantidade in troco_calculado.items():
         sistema.remover_do_caixa(denominacao, quantidade)
+
+    # Registrar transação no histórico
+    sistema.registrar_transacao(tipo_veiculo, valor_pago, valor_troco, troco_calculado)
 
     return jsonify({
         'sucesso': True,

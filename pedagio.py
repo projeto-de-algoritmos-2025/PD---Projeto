@@ -1,5 +1,7 @@
 import random
-from typing import Optional, Dict
+from datetime import datetime
+from typing import Dict, List, Optional
+
 
 class SistemaPedagio:
     """Representa o sistema de um pedágio, com tarifas e controle de caixa."""
@@ -14,6 +16,7 @@ class SistemaPedagio:
             0.50, 0.25, 0.10, 0.05, 0.01
         ]
         self.caixa: Dict[float, int] = {}
+        self.historico_transacoes: List[Dict] = []
 
     def abastecer_caixa(self, denominacao: float, quantidade: int):
         """Adiciona uma quantidade de uma cédula ou moeda específica ao caixa."""
@@ -39,7 +42,7 @@ class SistemaPedagio:
                     self.caixa[d] = self.caixa.get(d, 0) + qtd
                     valor_restante -= d * qtd
                     valor_restante = round(valor_restante, 2)
-    
+
     def coin_change(self, valor_troco: float) -> Optional[Dict[float, int]]:
         """Calcula o troco usando as cédulas e moedas disponíveis no caixa."""
         if valor_troco == 0:
@@ -60,6 +63,24 @@ class SistemaPedagio:
             return resultado
         return None
 
+    def registrar_transacao(self, tipo_veiculo: str, valor_pago: float, valor_troco: float, troco_detalhado: Dict[float, int]):
+        transacao = {
+            'id': len(self.historico_transacoes) + 1,
+            'data_hora': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
+            'tipo_veiculo': tipo_veiculo,
+            'tarifa': self.tarifas[tipo_veiculo],
+            'valor_pago': valor_pago,
+            'valor_troco': valor_troco,
+            'troco_detalhado': troco_detalhado
+        }
+        self.historico_transacoes.append(transacao)
+
+    def obter_historico(self) -> List[Dict]:
+        """Retorna o histórico de transações."""
+        return self.historico_transacoes.copy()
+
+    def limpar_historico(self):
+        self.historico_transacoes = []
+
     def limpar_caixa(self):
-        """Esvazia completamente o caixa."""
         self.caixa = {}

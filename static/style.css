@@ -128,3 +128,13 @@ pre {
 #result-message.info { background-color: #e7f3ff; color: #1877f2; }
 #result-message.success { background-color: #d4edda; color: #155724; }
 #result-message.error { background-color: #f8d7da; color: #721c24; }
+
+
+.btn-clear { background-color: #ffc107; color: #212529; }
+.btn-clear:hover { background-color: #e0a800; }
+
+hr {
+    border: none;
+    border-top: 1px solid #dddfe2;
+    margin: 20px 0;
+}

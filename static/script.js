@@ -1,9 +1,8 @@
 // Espera o documento HTML ser completamente carregado para executar o código
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Mapeia os elementos do HTML para variáveis JavaScript
+    // Mapeamento dos Elementos
     const vehicleSelect = document.getElementById('vehicle-type');
-    // APONTA PARA O NOVO ELEMENTO DE TARIFA
     const tariffDisplay = document.getElementById('tariff-display'); 
     const amountPaidInput = document.getElementById('amount-paid');
     const payButton = document.getElementById('pay-button');
@@ -13,92 +12,96 @@ document.addEventListener('DOMContentLoaded', () => {
     const cashQuantityInput = document.getElementById('cash-quantity');
     const addCashButton = document.getElementById('add-cash-button');
     const removeCashButton = document.getElementById('remove-cash-button');
+    const clearCashButton = document.getElementById('clear-cash-button');
 
-    let currentRates = {}; // Armazena as tarifas carregadas
+    let currentRates = {};
 
-    // --- FUNÇÕES DE API ---
+    // --- Funções de API ---
 
-    /**
-     * Busca as tarifas da API e preenche o menu de seleção de veículos.
-     */
     async function carregarTarifas() {
         try {
             const response = await fetch('/api/tarifas');
             currentRates = await response.json();
-            
             vehicleSelect.innerHTML = '<option value="">-- Selecione --</option>';
-            for (const veiculo in currentRates) {
-                const option = document.createElement('option');
-                option.value = veiculo;
-                option.textContent = veiculo.charAt(0).toUpperCase() + veiculo.slice(1);
-                vehicleSelect.appendChild(option);
+            for (const v in currentRates) {
+                const o = document.createElement('option');
+                o.value = v; o.textContent = v.charAt(0).toUpperCase() + v.slice(1);
+                vehicleSelect.appendChild(o);
             }
-        } catch (error) {
-            console.error('Falha ao carregar tarifas:', error);
-            vehicleSelect.innerHTML = '<option value="">Erro ao carregar</option>';
-        }
+        } catch (error) { console.error('Falha ao carregar tarifas:', error); }
     }
 
-    /**
-     * Busca a lista de denominações para o painel de gerenciamento.
-     */
     async function carregarDenominacoes() {
         try {
             const response = await fetch('/api/cedulas');
             const cedulas = await response.json();
-            
             cashDenominationSelect.innerHTML = '<option value="">-- Selecione --</option>';
-            // Ordena da maior para a menor
-            cedulas.sort((a, b) => b - a).forEach(cedula => {
-                const option = document.createElement('option');
-                option.value = cedula;
-                option.textContent = `R$ ${cedula.toFixed(2)}`;
-                cashDenominationSelect.appendChild(option);
+            cedulas.sort((a, b) => b - a).forEach(c => {
+                const o = document.createElement('option');
+                o.value = c; o.textContent = `R$ ${c.toFixed(2)}`;
+                cashDenominationSelect.appendChild(o);
             });
-        } catch (error) {
-            console.error('Falha ao carregar denominações:', error);
-        }
+        } catch (error) { console.error('Falha ao carregar denominações:', error); }
     }
 
     /**
-     * Busca o estado atual do caixa na API e exibe na tela.
+     * CORREÇÃO APLICADA AQUI
+     * Busca o estado atual do caixa na API e exibe na tela de forma robusta.
      */
     async function atualizarCaixa() {
         try {
             const response = await fetch('/api/caixa');
-            const caixa = await response.json();
-            const sortedDenominations = Object.keys(caixa).map(parseFloat).sort((a, b) => b - a);
+            const caixa = await response.json(); // Ex: {'5.0': 10, '100.0': 5}
             
-            if (sortedDenominations.length === 0) {
+            // Pega as chaves como texto (ex: ['5.0', '100.0'])
+            const chavesEmTexto = Object.keys(caixa);
+            
+            // Ordena as chaves com base em seu valor numérico
+            chavesEmTexto.sort((a, b) => parseFloat(b) - parseFloat(a));
+            
+            if (chavesEmTexto.length === 0) {
                 cashBoxStatusPre.textContent = 'Caixa Vazio';
                 return;
             }
-
-            const statusText = sortedDenominations.map(denom => {
-                const valor = denom.toFixed(2).toString().padStart(7, ' ');
-                const quantidade = caixa[denom] || 0;
-                return `R$ ${valor} x ${quantidade}`;
-            }).join('\n');
             
+            // Mapeia usando a chave em texto para garantir o acesso correto
+            const statusText = chavesEmTexto.map(chave => {
+                const valorNumerico = parseFloat(chave);
+                const valorFormatado = valorNumerico.toFixed(2).toString().padStart(7, ' ');
+                // Usa a 'chave' (texto) para acessar o valor, que é a forma correta
+                const quantidade = caixa[chave];
+                return `R$ ${valorFormatado} x ${quantidade}`;
+            }).join('\n');
+
             cashBoxStatusPre.textContent = statusText;
-        } catch (error) {
+
+        } catch (error) { 
             console.error('Falha ao carregar caixa:', error);
-            cashBoxStatusPre.textContent = 'Erro ao carregar o estado do caixa.';
+            cashBoxStatusPre.textContent = "Erro ao carregar caixa.";
         }
     }
 
-    /**
-     * Envia uma requisição para a API para gerenciar o caixa (adicionar/remover).
-     */
+    function exibirResultado(sucesso, mensagem, trocoInfo = null) {
+        resultMessageDiv.className = sucesso ? 'success' : 'error';
+        let html = `<strong>${mensagem}</strong>`;
+        if (sucesso && trocoInfo && trocoInfo.valor_troco > 0) {
+            html += `<p>Troco a devolver: R$ ${trocoInfo.valor_troco.toFixed(2)}</p><ul>`;
+            for (const [d, q] of Object.entries(trocoInfo.troco_detalhado)) {
+                html += `<li>${q}x de R$ ${parseFloat(d).toFixed(2)}</li>`;
+            }
+            html += `</ul>`;
+        }
+        resultMessageDiv.innerHTML = html;
+    }
+
+    // --- Funções de Ação ---
     async function gerenciarCaixa(action) {
         const denominacao = cashDenominationSelect.value;
         const quantidade = cashQuantityInput.value;
-
         if (!denominacao || !quantidade || parseInt(quantidade) <= 0) {
             alert('Selecione uma denominação e uma quantidade válida.');
             return;
         }
-
         try {
             const response = await fetch(`/api/caixa/${action}`, {
                 method: 'POST',
@@ -106,49 +109,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ denominacao, quantidade })
             });
             const result = await response.json();
-
-            alert(result.mensagem); // Mostra um alerta com o resultado
-            if(result.sucesso) {
-                atualizarCaixa(); // Atualiza a exibição do caixa
-                cashQuantityInput.value = ''; // Limpa o campo de quantidade
+            alert(result.mensagem);
+            if (result.sucesso) {
+                atualizarCaixa();
+                cashQuantityInput.value = '';
             }
-        } catch (error) {
-            console.error(`Erro ao ${action} caixa:`, error);
-            alert('Erro de comunicação com o servidor.');
-        }
+        } catch (error) { alert('Erro de comunicação com o servidor.'); }
     }
 
-    /**
-     * Envia os dados de pagamento para a API e exibe o resultado.
-     */
+    async function limparCaixa() {
+        if (!confirm("Tem certeza que deseja esvaziar o caixa?")) return;
+        try {
+            const response = await fetch('/api/caixa/limpar', { method: 'POST' });
+            const result = await response.json();
+            alert(result.mensagem);
+            if (result.sucesso) {
+                atualizarCaixa();
+            }
+        } catch (error) { alert('Erro de comunicação com o servidor.'); }
+    }
+
     async function processarPagamento() {
-        // Lógica de pagamento existente...
+        const tipo_veiculo = vehicleSelect.value;
+        const valor_pago = amountPaidInput.value;
+        if (!tipo_veiculo || !valor_pago || parseFloat(valor_pago) <= 0) {
+            alert('Selecione um veículo e um valor pago válido.');
+            return;
+        }
+        try {
+            const response = await fetch('/api/pagar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo_veiculo, valor_pago })
+            });
+            const resultado = await response.json();
+            exibirResultado(resultado.sucesso, resultado.mensagem, resultado);
+            if (resultado.sucesso) {
+                atualizarCaixa();
+                amountPaidInput.value = '';
+            }
+        } catch (error) { exibirResultado(false, 'Erro de comunicação.'); }
     }
 
-    // --- EVENT LISTENERS ---
-
-    // Quando o usuário muda o veículo, ATUALIZA O NOVO CAMPO DE TARIFA
+    // --- Configuração dos Eventos ---
     vehicleSelect.addEventListener('change', () => {
-        const selectedVehicle = vehicleSelect.value;
-        if (selectedVehicle && currentRates[selectedVehicle]) {
-            tariffDisplay.textContent = `R$ ${currentRates[selectedVehicle].toFixed(2)}`;
-        } else {
-            tariffDisplay.textContent = 'R$ 0.00';
-        }
+        const v = vehicleSelect.value;
+        tariffDisplay.textContent = v ? `R$ ${currentRates[v].toFixed(2)}` : 'R$ 0.00';
     });
     
     payButton.addEventListener('click', processarPagamento);
     addCashButton.addEventListener('click', () => gerenciarCaixa('abastecer'));
     removeCashButton.addEventListener('click', () => gerenciarCaixa('remover'));
+    clearCashButton.addEventListener('click', limparCaixa);
 
-    // --- Carregamento inicial ---
-    
+    // --- Carregamento Inicial ---
     function inicializarPainel() {
         carregarTarifas();
         carregarDenominacoes();
         atualizarCaixa();
     }
-
     inicializarPainel();
 });
-

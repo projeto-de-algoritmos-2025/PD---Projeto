@@ -11,19 +11,16 @@
 <body>
   <div class="container">
     <h1>Sistema de Pedágio</h1>
-
     <div class="card" id="payment-card">
       <h2>Pagamento</h2>
-
       <div class="tariff-display-wrapper">
         <label>Tarifa a Pagar</label>
         <div id="tariff-display">R$ 0.00</div>
       </div>
-
       <div class="form-group">
         <label for="vehicle-type">1. Selecione o Tipo de Veículo:</label>
         <select id="vehicle-type">
-          <option value="">Selecione um veículo</option>
+          <option value="">-- Selecione --</option>
         </select>
       </div>
       <div class="form-group">
@@ -32,20 +29,17 @@
       </div>
       <button id="pay-button">Processar Pagamento</button>
     </div>
-
     <div class="card" id="result-card">
       <h2>Resultado</h2>
       <div id="result-message" class="info">
         <p>Aguardando operação...</p>
       </div>
     </div>
-
     <div class="side-column">
       <div class="card" id="cash-box-card">
         <h2>Situação do Caixa</h2>
         <pre id="cash-box-status">Abasteça o caixa para começar.</pre>
       </div>
-
       <div class="card" id="manage-cash-card">
         <h2>Gerenciar Caixa</h2>
         <div class="form-group">
@@ -62,10 +56,11 @@
           <button id="add-cash-button" class="btn-success">Abastecer</button>
           <button id="remove-cash-button" class="btn-danger">Remover</button>
         </div>
+        <hr>
+        <button id="clear-cash-button" class="btn-clear">Limpar Caixa</button>
       </div>
     </div>
   </div>
-
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 

@@ -2,8 +2,12 @@ import random
 from typing import Optional, Dict
 
 class SistemaPedagio:
+    """Representa o sistema de um pedágio, com tarifas e controle de caixa."""
 
     def __init__(self):
+        """Inicializa o sistema com tarifas pré-definidas e um caixa randomizado."""
+        
+        # Define as tarifas para cada tipo de veículo.
         self.tarifas = {
             'moto': 2.50,
             'carro': 5.50,
@@ -11,42 +15,26 @@ class SistemaPedagio:
             'caminhao': 10.00
         }
 
+        # Lista com todas as denominações de cédulas e moedas brasileiras.
         self.cedulas = [
-            200.00,
-            100.00,
-            50.00,
-            20.00,
-            10.00,
-            5.00,
-            2.00,
-            1.00,
-            0.50,
-            0.25,
-            0.10,
-            0.05,
-            0.01
+            200.00, 100.00, 50.00, 20.00, 10.00, 5.00, 2.00, 1.00,
+            0.50, 0.25, 0.10, 0.05, 0.01
         ]
 
+        # O caixa armazena a quantidade de cada cédula/moeda. É um dicionário.
         self.caixa = {}
         self.randomizar_caixa()
 
     def randomizar_caixa(self) -> None:
-        print(" Randomizando o caixa...")
+        """Preenche o caixa com uma quantidade aleatória de cada cédula e moeda."""
         self.caixa = {}
 
+        # Define a quantidade mínima e máxima para cada denominação no caixa.
         pesos = {
-            200.00: (0, 3),
-            100.00: (0, 5),
-            50.00: (1, 8),
-            20.00: (2, 12),
-            10.00: (3, 15),
-            5.00: (5, 20),
-            2.00: (8, 25),
-            1.00: (10, 30),
-            0.50: (15, 35),
-            0.25: (20, 40),
-            0.10: (25, 45),
-            0.05: (30, 50),
+            200.00: (0, 3), 100.00: (0, 5), 50.00: (1, 8),
+            20.00: (2, 12), 10.00: (3, 15), 5.00: (5, 20),
+            2.00: (8, 25), 1.00: (10, 30), 0.50: (15, 35),
+            0.25: (20, 40), 0.10: (25, 45), 0.05: (30, 50),
             0.01: (40, 60)
         }
 
@@ -56,106 +44,44 @@ class SistemaPedagio:
             if quantidade > 0:
                 self.caixa[cedula] = quantidade
 
-        print("Caixa atual:")
-        self.mostrar_caixa()
-
-    def mostrar_caixa(self) -> None:
-        total = 0
-        for denominacao in sorted(self.caixa.keys(), reverse=True):
-            quantidade = self.caixa[denominacao]
-            subtotal = denominacao * quantidade
-            total += subtotal
-            print(f"  R$ {denominacao:.2f} x {quantidade} = R$ {subtotal:.2f}")
-        print(f"  Total no caixa: R$ {total:.2f}")
-        print()
-
-
     def coin_change(self, valor_troco: float) -> Optional[Dict[float, int]]:
-
+        """
+        Calcula o troco usando as cédulas e moedas disponíveis no caixa.
+        
+        Este método utiliza um algoritmo guloso (greedy), começando pelas maiores
+        denominações, para encontrar a combinação de notas e moedas para o troco.
+        
+        Retorna um dicionário com o troco ou None se não for possível.
+        """
         if valor_troco == 0:
             return {}
 
+        # Ordena as denominações da maior para a menor para a abordagem gulosa.
         denominacoes_ordenadas = sorted(self.caixa.keys(), reverse=True)
-
         resultado = {}
-        valor_restante = valor_troco
+        valor_restante = round(valor_troco, 2)
 
         for denominacao in denominacoes_ordenadas:
-            if valor_restante >= denominacao and self.caixa[denominacao] > 0:
+            # Verifica se a denominação pode ser usada e se está disponível no caixa.
+            if valor_restante >= denominacao and self.caixa.get(denominacao, 0) > 0:
+                
+                # Calcula quantas notas/moedas são necessárias e quantas estão disponíveis.
                 quantidade_necessaria = int(valor_restante / denominacao)
                 quantidade_disponivel = self.caixa[denominacao]
+                
+                # Usa a menor quantidade entre o necessário e o disponível.
                 quantidade_usada = min(quantidade_necessaria, quantidade_disponivel)
 
                 if quantidade_usada > 0:
                     resultado[denominacao] = quantidade_usada
                     valor_restante -= denominacao * quantidade_usada
+                    
+                    # Arredonda para evitar problemas de precisão com ponto flutuante.
                     valor_restante = round(valor_restante, 2)
 
+        # Se o valor restante for zero (com uma pequena tolerância), o troco foi encontrado.
+        # Retorna o resultado ou None se não foi possível compor o troco exato.
         if abs(valor_restante) < 0.01:
             return resultado
         else:
             return None
-        
-    def processar_pagamento(self, tipo_veiculo: str, valor_pago: float) -> bool:
-        if tipo_veiculo not in self.tarifas:
-            print(f" Tipo de veículo inválido: {tipo_veiculo}")
-            return False
-
-        tarifa = self.tarifas[tipo_veiculo]
-
-        print(f" Veículo: {tipo_veiculo.capitalize()}")
-        print(f" Tarifa: R$ {tarifa:.2f}")
-        print(f"Valor pago: R$ {valor_pago:.2f}")
-
-        if valor_pago < tarifa:
-            print(f"Valor insuficiente! Faltam R$ {tarifa - valor_pago:.2f}")
-            return False
-
-        if valor_pago == tarifa:
-            print("Pagamento exato! Sem troco.")
-            return True
-
-        valor_troco = round(valor_pago - tarifa, 2)
-
-        print(f" Troco necessário: R$ {valor_troco:.2f}")
-
-        troco = self.coin_change(valor_troco)
-
-        if troco is None:
-            print(" Não é possível dar o troco! Caixa insuficiente.")
-            return False
-
-        print(" Troco calculado:")
-        total_moedas = 0
-        for denominacao in sorted(troco.keys(), reverse=True):
-            quantidade = troco[denominacao]
-            total_moedas += quantidade
-            print(f"  R$ {denominacao:.2f} x {quantidade}")
-
-        print(f" Total de moedas/notas no troco: {total_moedas}")
-
-        for denominacao, quantidade in troco.items():
-            self.caixa[denominacao] -= quantidade
-
-        return True
-
-    def mostrar_tarifas(self) -> None:
-        print(" Tarifas do Pedágio:")
-        for veiculo, tarifa in self.tarifas.items():
-            print(f"  {veiculo.capitalize()}: R$ {tarifa:.2f}")
-        print()
-
-
-def main():
-    sistema = SistemaPedagio()
-
-    print("=" * 50)
-    print("  SISTEMA DE PEDÁGIO - COIN CHANGE")
-    print("=" * 50)
-    print()
-
-    sistema.mostrar_tarifas()
-
-
-if __name__ == "__main__":
-    main()

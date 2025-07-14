@@ -2,32 +2,46 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: #f0f2f5;
     color: #333;
-    display: flex;
-    justify-content: center;
     padding: 20px;
     margin: 0;
 }
 
 .container {
-    max-width: 600px;
-    width: 100%;
-}
-
-h1, h2 {
-    color: #1c1e21;
-    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 h1 {
-    margin-bottom: 30px;
+    width: 100%;
+    text-align: center;
+    color: #1c1e21;
+    margin-bottom: 10px;
+}
+
+#payment-card, #result-card {
+    flex: 2;
+    min-width: 300px;
+}
+
+.side-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 300px;
 }
 
 .card {
     background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
     padding: 24px;
-    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .form-group {
@@ -53,7 +67,6 @@ input[type="number"], select {
 button {
     width: 100%;
     padding: 12px;
-    background-color: #1877f2;
     color: white;
     border: none;
     border-radius: 6px;
@@ -63,22 +76,41 @@ button {
     transition: background-color 0.2s;
 }
 
-button:hover {
-    background-color: #166fe5;
+#pay-button { background-color: #1877f2; }
+#pay-button:hover { background-color: #166fe5; }
+
+.manage-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-success { background-color: #28a745; }
+.btn-success:hover { background-color: #218838; }
+
+.btn-danger { background-color: #dc3545; }
+.btn-danger:hover { background-color: #c82333; }
+
+/* NOVO: Estilo para o campo de tarifa fixo */
+.tariff-display-wrapper {
+    margin-bottom: 24px; /* Espaço abaixo do campo */
+}
+
+#tariff-display {
+    background-color: #e9ecef; /* Cor de fundo de campo desabilitado */
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    text-align: center;
+    font-size: 2em; /* Fonte bem grande */
+    font-weight: bold;
+    color: #495057;
 }
 
 #result-message {
     padding: 15px;
     border-radius: 6px;
-    background-color: #e9ebee;
     min-height: 50px;
     line-height: 1.5;
-}
-
-#vehicle-rate {
-    margin-left: 10px;
-    font-weight: bold;
-    color: #008000;
 }
 
 pre {
@@ -86,8 +118,13 @@ pre {
     color: #abb2bf;
     padding: 15px;
     border-radius: 5px;
-    white-space: pre-wrap; /* Garante a quebra de linha */
+    white-space: pre-wrap;
     word-wrap: break-word;
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
     font-size: 14px;
+    flex-grow: 1;
 }
+
+#result-message.info { background-color: #e7f3ff; color: #1877f2; }
+#result-message.success { background-color: #d4edda; color: #155724; }
+#result-message.error { background-color: #f8d7da; color: #721c24; }

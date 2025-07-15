@@ -88,3 +88,6 @@ Siga os passos abaixo para rodar a aplicação em sua máquina local.
 3.  **Verifique os Resultados:**
     * O painel **"Resultado"** mostrará se o pagamento foi bem-sucedido e os detalhes do troco.
     * O painel **"Situação do Caixa"** será atualizado automaticamente, mostrando a entrada do dinheiro e a saída do troco.
+
+## Apresentação
+Link para apresentação: [clique aqui](https://youtu.be/CDZ6RU4Wb6o)
